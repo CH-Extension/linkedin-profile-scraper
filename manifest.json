@@ -33,12 +33,13 @@
         }
     ],
     "permissions": [
+        "declarativeContent",
         "storage",
         "activeTab",
         "scripting",
         "tabs"
     ],
     "host_permissions": [
-        "https://*/*"
+        "https://*.linkedin.com/*"
     ]
 }
