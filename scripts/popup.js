@@ -14,11 +14,19 @@ function checkLinkedin() {
         var url = tab.url;
     
         if (url.indexOf("linkedin") > -1) {
-            alert("here");
+            getBasicProfile();
         } else {
             $("body").css({"width": "250px", "height": "40px"});
             $("#result").html("<div class='h6 text-justify'>You can't run this extension.</div><div class='h6 text-justify'>Please check the website URL.</div>");
 			return false;
+        }
+    });
+}
+
+function getBasicProfile() {
+    chrome.tabs.sendMessage(tab.id, {text: 'get_profile'}, function(response) {
+        if (response) {
+            console.log(response);
         }
     });
 }
