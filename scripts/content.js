@@ -4,7 +4,6 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
     if (msg.text == "get_list") {
         if (msg.page == "search") {
             $("li.reusable-search__result-container").each(function (i, e) {
-                if (i > 2) return false;
                 var link = $(e).find(".app-aware-link.scale-down ").attr("href");
                 
                 chrome.runtime.sendMessage({text: "openNewTab", url: link}).then((res) => {
@@ -12,7 +11,6 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
                     console.log(profileData)
                 });
             });
-            console.log(profileData)
             sendResponse(profileData);
         }
     }
@@ -35,6 +33,8 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
         }
         var job = document.querySelector(".text-body-medium.break-words").innerText;
 
+        /*
+        ------------- Ignore this for now --------------
         var company = [];
         if (
             document.querySelector("#experience") && 
@@ -56,7 +56,7 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
                 });
             });
         }
-        console.log(company)
+        */
         
         sendResponse({
             name:           name,
@@ -64,7 +64,7 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
             about:          about,
             follower:       follower,
             jobTitle:       job,
-            company:        company
+            // company:        company
         });
     }
     return true;
