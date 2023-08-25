@@ -4,11 +4,11 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
     if (msg.text == "get_list") {
         if (msg.page == "search") {
             $("li.reusable-search__result-container").each(function (i, e) {
-                if (i > 0) return false;
+                if (i > 2) return false;
                 var link = $(e).find(".app-aware-link.scale-down ").attr("href");
                 
                 chrome.runtime.sendMessage({text: "openNewTab", url: link}).then((res) => {
-                    console.log(res);
+                    profileData.push(res.list);
                 });
             });
             sendResponse(profileData);
