@@ -28,9 +28,9 @@
                 "*://localhost/*"
             ],
             "js": [
-                "./scripts/jquery.min.js",
-                "./scripts/content.js"
-            ]
+                "./scripts/jquery.min.js"
+            ],
+            "runAt": "document_start"
         }
     ],
     "permissions": [

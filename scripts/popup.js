@@ -3,8 +3,6 @@
 var tab;
 var searchPage = "pub";
 
-function getProfileLinks() {}
-
 //get current tab url
 function checkIsLinkedin() {
     // https://developer.chrome.com/extensions/tabs#method-query
@@ -15,28 +13,45 @@ function checkIsLinkedin() {
         activeTab = tab.id;
         var url = tab.url;
     
-        // // Check the opened tab is linkedin.com
-        // if (url.indexOf("linkedin.com") > -1) {
-        //     // ------------------ Should be check which page is user on -------------------------------
-        //     if (url.indexOf("linkedin.com/search/results/people") > -1) {
-        //         searchPage = "search";
-        //     }
-        //     getProfileLinks();
-        // } else {
-        //     $("#result").html("<div class='h6 text-justify'>You can't run this extension.</div><div class='h6 text-justify'>Please check the website URL.</div>");
-		// 	return false;
-        // }
-
-        searchPage = "search";
-        getProfileLinks();
+        // Check the opened tab is linkedin.com
+        if (url.indexOf("linkedin.com") > -1) {
+            // ------------------ Should be check which page is user on -------------------------------
+            if (url.indexOf("linkedin.com/in") > -1) {
+                scrapeProfile();
+            } else {
+                if (url.indexOf("linkedin.com/search/results/people") > -1) {
+                    searchPage = "search";
+                }
+                getProfileLinks();
+            }
+        } else {
+            $("#result").html("<div class='h6 text-justify'>You can't run this extension.</div><div class='h6 text-justify'>Please check the website URL.</div>");
+			return false;
+        }
     });
 }
 
 function getProfileLinks() {
-    chrome.tabs.sendMessage(tab.id, {text: 'get_list', page: searchPage}, function(response) {
-        if (response) {
-            console.log(response);
-        }
+    chrome.scripting.executeScript({ target: {tabId: tab.id, allFrames: true}, files: ['scripts/jquery.min.js', 'scripts/content.js'], }, function() {
+        chrome.tabs.sendMessage(tab.id, {text: 'get_list', page: searchPage}, function(response) {
+            console.log(response)
+            if (response) {
+                console.log(response);
+            }
+        });
+
+    });
+    // chrome.scripting.executeScript(tab.id, {file: './scripts/content.js'}, function() {
+    // });
+}
+
+function scrapeProfile() {
+    chrome.scripting.executeScript({ target: {tabId: tab.id, allFrames: true}, files: ['scripts/jquery.min.js', 'scripts/content.js'], }, function() {
+        chrome.tabs.sendMessage(tab.id, {text: 'scrape_profile', profile: 1}, function(response) {
+            if (response) {
+                console.log(response);
+            }
+        });
     });
 }
 
