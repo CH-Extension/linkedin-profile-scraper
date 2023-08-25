@@ -9,8 +9,10 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
                 
                 chrome.runtime.sendMessage({text: "openNewTab", url: link}).then((res) => {
                     profileData.push(res.list);
+                    console.log(profileData)
                 });
             });
+            console.log(profileData)
             sendResponse(profileData);
         }
     }
@@ -21,10 +23,16 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
         }
         console.clear();
         var name = document.querySelector("h1.break-words").innerText;
-        var follower = document.querySelector("#content_collections").closest("section").querySelector(".pvs-header__subtitle.pvs-header__optional-link.text-body-small > span").innerText;
-        follower = follower.split(" follower")[0];
+        var follower = 0;
+        if ( document.querySelector("#content_collections") && document.querySelector("#content_collections").closest("section") ) {
+            var follower = document.querySelector("#content_collections").closest("section").querySelector(".pvs-header__subtitle.pvs-header__optional-link.text-body-small > span").innerText;
+            follower = follower.split(" follower")[0];
+        }
         var profileLink = window.location.href;
-        var about = document.querySelector("#about").closest("section").querySelector(".pv-shared-text-with-see-more.full-width.t-14.t-normal.t-black.display-flex.align-items-center").querySelector("span").innerText;
+        var about = "";
+        if ( document.querySelector("#about") ) {
+            about = document.querySelector("#about").closest("section").querySelector(".pv-shared-text-with-see-more.full-width.t-14.t-normal.t-black.display-flex.align-items-center").querySelector("span").innerText;
+        }
         var job = document.querySelector(".text-body-medium.break-words").innerText;
 
         var company = [];
@@ -40,7 +48,6 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
                     companyName = companyName.split(" logo")[0];
                 } else {
                     companyName = i.querySelector(".display-flex.flex-row.justify-space-between").querySelector("span.t-14.t-normal").querySelector("span").innerText;
-                    console.log(companyName)
                 }
                 var companyLink = i.querySelector("a[data-field='experience_company_logo']").getAttribute("href");
                 company.push({
@@ -49,6 +56,7 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
                 });
             });
         }
+        console.log(company)
         
         sendResponse({
             name:           name,
