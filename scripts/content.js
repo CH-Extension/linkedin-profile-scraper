@@ -26,6 +26,7 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
             var follower = document.querySelector("#content_collections").closest("section").querySelector(".pvs-header__subtitle.pvs-header__optional-link.text-body-small > span").innerText;
             follower = follower.split(" follower")[0];
         }
+        var address = document.querySelector(".pv-text-details__left-panel.mt2").querySelector("span.text-body-small.inline.t-black--light.break-words").innerText;
         var profileLink = window.location.href;
         var about = "";
         if ( document.querySelector("#about") ) {
@@ -64,7 +65,7 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
             about:          about,
             follower:       follower,
             jobTitle:       job,
-            // company:        company
+            address:        address
         });
     }
     return true;
