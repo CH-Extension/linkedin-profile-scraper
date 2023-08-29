@@ -6,7 +6,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             if (msg.page == "search") {
                 $("li.reusable-search__result-container").each(function (i, e) {
                     var link = $(e).find(".app-aware-link.scale-down ").attr("href");
-                    
                     chrome.runtime.sendMessage({ text: "openUserProfile", url: link, loginUser: true }).then((res) => {
                         profileData.push(res.list);
                         console.log(profileData)
@@ -16,7 +15,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                 sendResponse(profileData);
             } else if (msg.page == "pub") {
                 $("li.pserp-layout__profile-result-list-item").each(function (i, e) {
-                    if (i > 0) return false;
+                    if (i > 3) return false;
                     var link = $(e).find("a.base-card ").attr("href");
                     
                     chrome.runtime.sendMessage({ text: "openUserProfile", url: link, loginUser: false }).then((res) => {
@@ -108,7 +107,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                         /**
                          * Should be open company profile
                          */
-                        alert("Here you are~~");
+                        let companyLink = await chrome.runtime.sendMessage({text: "openCompanyProfile", url: link});
+                        console.log(companyLink);
                     }
                 }
                 var websites = document.querySelectorAll("dd.websites__list-item.websites__url");
@@ -193,7 +193,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                 link = website.getAttribute("href");
             } else {
                 document.querySelector(".artdeco-dropdown__trigger.artdeco-dropdown__trigger--placement-bottom.ember-view.org-overflow-menu__dropdown-trigger.artdeco-button.artdeco-button--2.artdeco-button--secondary.artdeco-button--muted").click();
-                await triggerDelay(2);
+                await triggerDelay(1);
                 var item = document.querySelector(".artdeco-dropdown__content-inner");
                 if (item) {
                     link = item.querySelector("a").getAttribute("href");
