@@ -34,39 +34,41 @@ function checkIsLinkedin() {
 function getProfileLinks() {
     chrome.scripting.executeScript({ target: {tabId: tab.id, allFrames: true}, files: ['scripts/jquery.min.js', 'scripts/content.js'], }, function() {
         chrome.tabs.sendMessage(tab.id, {text: 'get_list', page: searchPage}, function(response) {
-            console.log(response)
             if (response) {
-                console.log(response);
+                $("#found_num").text( response.length );
+                draftProfiles(response);
             }
         });
-
+        
     });
-    // chrome.scripting.executeScript(tab.id, {file: './scripts/content.js'}, function() {
-    // });
 }
 
 function scrapeProfile() {
     chrome.scripting.executeScript({ target: {tabId: tab.id, allFrames: true}, files: ['scripts/jquery.min.js', 'scripts/content.js'], }, function() {
         chrome.tabs.sendMessage(tab.id, {text: 'scrape_profile', profile: 1}, function(response) {
             if (response) {
+                draftProfiles(response);
                 console.log(response);
             }
         });
     });
 }
 
-// chrome.storage.sync.get(['convertlead_email', 'convertlead_pwd'], function(result) {
-//     if (result.convertlead_pwd != undefined && result.convertlead_email != undefined) {
-//         checkLinkedin();
-//     } else {
-//         $("#result").html("<div class='h6'>Please go to the Options and enter your license.</div>");
-//     }
-//     return false;        
-// });
+function draftProfiles(list) {
+    chrome.storage.sync.get(['linkedin_profiles'], function(result) {
+        if (result.linkedin_profiles != undefined) {
+            var profiles = JSON.parse(linkedin_profiles);
+            profiles = profiles.concat(list);
+            chrome.storage.sync.set({ linkedin_profiles: JSON.stringify(profiles) });
+        } else {
+            chrome.storage.sync.set({ linkedin_profiles: JSON.stringify(list) });
+        }
+        return false;        
+    });
+}
+
 
 $(document).ready(function() {
-    checkIsLinkedin();
-
     $("#login").click(function() {
         var email = $("#email").val();
         var password = $("#password").val();

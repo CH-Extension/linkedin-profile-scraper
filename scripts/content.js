@@ -101,7 +101,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
                 var position = document.querySelector("div[data-section='currentPositionsDetails']");
                 if (position) {
-                    var name = position.querySelector("span.top-card-link__description").innerText;
+                    var companyName = position.querySelector("span.top-card-link__description").innerText;
                     var link = position.querySelector("a.top-card-link").getAttribute("href");
                     if (link.indexOf("linkedin.com/company/")) {
                         /**
@@ -110,6 +110,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                         let companyLink = await chrome.runtime.sendMessage({text: "openCompanyProfile", url: link});
                         console.log(companyLink);
                     }
+                    profile.companies.push( { name: companyName, url: link });
                 }
                 var websites = document.querySelectorAll("dd.websites__list-item.websites__url");
                 if (websites) {
