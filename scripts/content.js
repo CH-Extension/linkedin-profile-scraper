@@ -1,9 +1,9 @@
 var profileData = [];
+var trigger, sortTrigger;
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     (async () => {
         if (msg.text == "get_list") {
             console.clear();
-            alert();
             if (msg.page == "search") {
                 const getUsers = async() => {
                     var users = document.querySelectorAll("li.reusable-search__result-container");
@@ -40,6 +40,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             var profile = {
                 name: "",
                 follower: 0,
+                companyFollower: 0,
                 address: "",
                 profileLink: "",
                 about: "",
@@ -48,6 +49,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                 phone: "",
                 website: [],
                 companies: [],
+                lastPostDate: "",
             };
             
             console.clear();
@@ -125,7 +127,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             }
     
             var personalWebsites = [];
-            var companies = [];
+            var companyPostLink = "";
             
             /**
             * Check if the company the current user works for exists.
@@ -157,7 +159,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                             for(let i = 0 ; i < _obj1.length ; i++) {
                                 let e = _obj1[i];
                                 var companyName = "";
-                                if (e.querySelector("img")) {
+                                if (e.querySelector("img.ivm-view-attr__img--centered")) {
                                     companyName = e.querySelector("img.ivm-view-attr__img--centered").getAttribute("alt");
                                     companyName = companyName.split(" logo")[0];
                                 } else {
@@ -171,9 +173,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                                             /**
                                              * Open company profile page.
                                              */
-    
-                                            let link = await chrome.runtime.sendMessage({text: "openCompanyProfile", url: companyLink});
-                                            profile.companies.push( { name: companyName, url: link });
+                                            console.log(companyLink);
+                                            let res = await chrome.runtime.sendMessage({text: "openCompanyProfile", url: companyLink});
+                                            profile.companies.push( { name: companyName, url: res.website });
+                                            companyPostLink = res.profile + "/posts?feedView=all";
                                         } else {
                                             profile.companies.push( { name: companyName, url: companyLink });
                                         }
@@ -185,6 +188,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                 }
             }
             await func();
+            
+            // const getPostDate = async () => {
+            //     res = await chrome.runtime.sendMessage({text: "companyPostDate", url: companyPostLink});
+            //     profile.lastPostDate = res.date;
+            //     profile.companyFollower = res.follower;
+            // }
+            // await getPostDate();
+
             sendResponse( profile );
         }
     
@@ -192,25 +203,67 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
          * Click the More button and get "Visit website" link
          */
         if (msg.text == "getCompanyLink") {
-            var website = document.querySelector("section.org-top-card.artdeco-card").querySelector("a.ember-view.org-top-card-primary-actions__action");
             var link = "";
+            var website = document.querySelector("section.org-top-card.artdeco-card").querySelector("a.ember-view.org-top-card-primary-actions__action");
             if (website) {
                 link = website.getAttribute("href");
+                sendResponse({website: link, profile: window.location.href});
             } else {
-                document.querySelector(".artdeco-dropdown__trigger.artdeco-dropdown__trigger--placement-bottom.ember-view.org-overflow-menu__dropdown-trigger.artdeco-button.artdeco-button--2.artdeco-button--secondary.artdeco-button--muted").click();
-                await triggerDelay(1);
-                var item = document.querySelector(".artdeco-dropdown__content-inner");
-                if (item) {
-                    link = item.querySelector("a").getAttribute("href");
+                var triggerItem = document.querySelector(".artdeco-dropdown__trigger.artdeco-dropdown__trigger--placement-bottom.ember-view.org-overflow-menu__dropdown-trigger.artdeco-button.artdeco-button--2.artdeco-button--secondary.artdeco-button--muted");
+                if (triggerItem) triggerItem.click();
+                
+                function getWebsiteLink() {
+                    var item = document.querySelector(".artdeco-dropdown__content-inner");
+                    if (item) {
+                        clearInterval(websiteLink);
+                        if (item.querySelector("a")) {
+                            link = item.querySelector("a").getAttribute("href");
+                        }
+                    }
+                    sendResponse({website: link, profile: window.location.href});
+                }
+                websiteLink = setInterval(getWebsiteLink, 1000)
+            }
+        }
+
+        if (msg.text == "lastPostDate") {
+            var companyFollower = 0;
+
+            var postedDate = "";
+
+            var triggerDropDown = function() {
+                if (document.querySelector("ul.sort-dropdown__list")) {
+                    clearInterval(trigger);
+                    
+                    document.querySelector("ul.sort-dropdown__list").querySelector("li.sort-dropdown__list-item:nth-child(2)").querySelector("button").click();
+                    sortTrigger = setInterval(sortPost, 1000);
                 }
             }
-            /**
-             * Would be scrape the last post date
-             */
-            // var postLink = document.querySelectorAll("li.org-page-navigation__item").forEach(function(e, i) {
-                
-            // });
-            sendResponse(link);
+
+            var sortPost = function() {
+                if ( document.querySelector(".update-components-text-view") && document.querySelector(".update-components-text-view").querySelector("span.visually-hidden") ) {
+                    clearInterval(sortTrigger);
+                    var updateTime = (document.querySelector(".update-components-text-view").querySelector("span.visually-hidden").innerText).split(" ")[0];
+                    postedDate = updateTime;
+                    
+                    if (    document.querySelector(".org-top-card-summary-info-list") &&
+                            document.querySelector(".org-top-card-summary-info-list").querySelector(".org-top-card-summary-info-list__info-item:nth-child(2)") ) {
+                        var follower = document.querySelector(".org-top-card-summary-info-list").querySelector(".org-top-card-summary-info-list__info-item:nth-child(2)").innerText;
+                        companyFollower = follower.split(" follower")[0];
+                    }
+                    sendResponse({date: postedDate, follower: companyFollower});
+                }
+            }
+
+            var checkLoaded = function() {
+                if (document.querySelector("div.sort-dropdown__dropdown") && document.querySelector("div.sort-dropdown__dropdown").querySelector(".artdeco-dropdown__trigger")) {
+                    document.querySelector("div.sort-dropdown__dropdown").querySelector(".artdeco-dropdown__trigger").click();
+                    clearInterval(isLoaded);
+                    trigger = setInterval(triggerDropDown, 2000);
+                }
+            }
+
+            isLoaded = setInterval(checkLoaded, 1000);
         }
 
         if (msg.text == "next_search") {

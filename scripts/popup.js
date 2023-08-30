@@ -69,8 +69,6 @@ function draftProfiles(list) {
 
 
 $(document).ready(function() {
-    checkIsLinkedin();
-
     $("#login").click(function() {
         var email = $("#email").val();
         var password = $("#password").val();
@@ -85,6 +83,7 @@ $(document).ready(function() {
                 $(".login-form").hide();
                 $("#result").show();
 
+                chrome.storage.sync.clear();
                 checkIsLinkedin();
             })
             .fail(function(xhr, status, error) {
@@ -99,6 +98,20 @@ $(document).ready(function() {
                     scrapeProfile();
                 }
             });
+        });
+    });
+
+    $("#send").click(function() {
+        var serverLink = "https://api.convertlead.com/api/v1/linkedin";
+        chrome.storage.sync.get(['linkedin_profiles'], function (result) {
+            if (result.linkedin_profiles != undefined) {
+                var scrapeData = JSON.parse(result.linkedin_profiles);
+                $.post(serverLink, scrapeData).done(function(res) {
+                    alert("Profile data sent!!");
+                }).fail(function(xhr, status, error) {
+                    alert("Couldn't send the scrape data to your server...");
+                });
+            }
         });
     });
 });
