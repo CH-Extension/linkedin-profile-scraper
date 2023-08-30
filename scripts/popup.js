@@ -32,7 +32,7 @@ function checkIsLinkedin() {
 }
 
 function getProfileLinks() {
-    chrome.scripting.executeScript({ target: {tabId: tab.id, allFrames: true}, files: ['scripts/jquery.min.js', 'scripts/content.js'], }, function() {
+    chrome.scripting.executeScript({ target: {tabId: tab.id}, files: ['scripts/jquery.min.js', 'scripts/content.js'], }, function() {
         chrome.tabs.sendMessage(tab.id, {text: 'get_list', page: searchPage}, function(response) {
             if (response) {
                 $("#found_num").text( response.length );
@@ -44,7 +44,7 @@ function getProfileLinks() {
 }
 
 function scrapeProfile() {
-    chrome.scripting.executeScript({ target: {tabId: tab.id, allFrames: true}, files: ['scripts/jquery.min.js', 'scripts/content.js'], }, function() {
+    chrome.scripting.executeScript({ target: {tabId: tab.id}, files: ['scripts/jquery.min.js', 'scripts/content.js'], }, function() {
         chrome.tabs.sendMessage(tab.id, {text: 'scrape_profile', profile: 1}, function(response) {
             if (response) {
                 draftProfiles(response);
@@ -57,7 +57,7 @@ function scrapeProfile() {
 function draftProfiles(list) {
     chrome.storage.sync.get(['linkedin_profiles'], function(result) {
         if (result.linkedin_profiles != undefined) {
-            var profiles = JSON.parse(linkedin_profiles);
+            var profiles = JSON.parse(result.linkedin_profiles);
             profiles = profiles.concat(list);
             chrome.storage.sync.set({ linkedin_profiles: JSON.stringify(profiles) });
         } else {
@@ -69,6 +69,8 @@ function draftProfiles(list) {
 
 
 $(document).ready(function() {
+    checkIsLinkedin();
+
     $("#login").click(function() {
         var email = $("#email").val();
         var password = $("#password").val();
@@ -88,5 +90,15 @@ $(document).ready(function() {
             .fail(function(xhr, status, error) {
                 $('#status').text('Your credential is incorrect');
             });;
+    });
+
+    $("#load_more").click(function() {
+        chrome.scripting.executeScript({ target: {tabId: tab.id }, files: ['scripts/content.js'], }, function() {
+            chrome.tabs.sendMessage(tab.id, {text: 'next_search'}, function(response) {
+                if (response) {
+                    scrapeProfile();
+                }
+            });
+        });
     });
 });

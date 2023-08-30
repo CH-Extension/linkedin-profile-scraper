@@ -12,7 +12,7 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
                         chrome.tabs.sendMessage(newTab.id, { text: 'scrape_profile', loginUser: msg.loginUser }).then((data) => {
                             if (data) {
                                 sendResponse({list: data});
-                                chrome.tabs.remove(newTab.id);
+                                // chrome.tabs.remove(newTab.id);
                             }
                         });
                     })

@@ -3,26 +3,31 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     (async () => {
         if (msg.text == "get_list") {
             console.clear();
+            alert();
             if (msg.page == "search") {
-                $("li.reusable-search__result-container").each(function (i, e) {
-                    var link = $(e).find(".app-aware-link.scale-down ").attr("href");
-                    chrome.runtime.sendMessage({ text: "openUserProfile", url: link, loginUser: true }).then((res) => {
-                        profileData.push(res.list);
-                        console.log(profileData)
-                        console.log(JSON.stringify(profileData));
-                    });
-                });
+                const getUsers = async() => {
+                    var users = document.querySelectorAll("li.reusable-search__result-container");
+                    for (var i = 0; i < users.length; i++) {
+                        var link = users[i].querySelector(".app-aware-link.scale-down").getAttribute("href");
+                        
+                        await chrome.runtime.sendMessage({ text: "openUserProfile", url: link, loginUser: true }).then((res) => {
+                            profileData.push(res.list);
+                            console.log(profileData)
+                            console.log(JSON.stringify(profileData));
+                        });
+                    }
+                }
+                await getUsers();
                 sendResponse(profileData);
             } else if (msg.page == "pub") {
-                $("li.pserp-layout__profile-result-list-item").each(function (i, e) {
-                    if (i > 3) return false;
-                    var link = $(e).find("a.base-card ").attr("href");
+                var users = document.querySelectorAll("li.pserp-layout__profile-result-list-item");
+                for (var i = 0; i < users.length; i++) {
+                    var link = users[i].querySelector("a.base-card").getAttribute("href");
                     
-                    chrome.runtime.sendMessage({ text: "openUserProfile", url: link, loginUser: false }).then((res) => {
+                    await chrome.runtime.sendMessage({ text: "openUserProfile", url: link, loginUser: true }).then((res) => {
                         profileData.push(res.list);
-                        console.log(profileData)
                     });
-                });
+                }
                 sendResponse(profileData);
             }
         }
@@ -107,8 +112,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                         /**
                          * Should be open company profile
                          */
-                        let companyLink = await chrome.runtime.sendMessage({text: "openCompanyProfile", url: link});
-                        console.log(companyLink);
+                        link = await chrome.runtime.sendMessage({text: "openCompanyProfile", url: link});
                     }
                     profile.companies.push( { name: companyName, url: link });
                 }
@@ -200,7 +204,18 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                     link = item.querySelector("a").getAttribute("href");
                 }
             }
+            /**
+             * Would be scrape the last post date
+             */
+            // var postLink = document.querySelectorAll("li.org-page-navigation__item").forEach(function(e, i) {
+                
+            // });
             sendResponse(link);
+        }
+
+        if (msg.text == "next_search") {
+            document.querySelector("div.artdeco-pagination").querySelector("button.artdeco-pagination__button--next").click();
+            sendResponse("next");
         }
     })();
     return true;
