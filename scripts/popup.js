@@ -2,6 +2,7 @@
 
 var tab;
 var searchPage = "pub";
+var scrapeProfileData = [];
 
 //get current tab url
 function checkIsLinkedin() {
@@ -55,6 +56,9 @@ function scrapeProfile() {
 }
 
 function draftProfiles(list) {
+    scrapeProfileData = list;
+
+    /**
     chrome.storage.sync.get(['linkedin_profiles'], function(result) {
         if (result.linkedin_profiles != undefined) {
             var profiles = JSON.parse(result.linkedin_profiles);
@@ -65,6 +69,7 @@ function draftProfiles(list) {
         }
         return false;        
     });
+     */
 }
 
 
@@ -102,16 +107,17 @@ $(document).ready(function() {
     });
 
     $("#send").click(function() {
+        console.log(scrapeProfileData);
         var serverLink = "https://api.convertlead.com/api/v1/linkedin";
-        chrome.storage.sync.get(['linkedin_profiles'], function (result) {
-            if (result.linkedin_profiles != undefined) {
-                var scrapeData = JSON.parse(result.linkedin_profiles);
-                $.post(serverLink, scrapeData).done(function(res) {
-                    alert("Profile data sent!!");
-                }).fail(function(xhr, status, error) {
-                    alert("Couldn't send the scrape data to your server...");
-                });
-            }
+        $.post(serverLink, scrapeProfileData).done(function(res) {
+            alert("Profile data sent!!");
+        }).fail(function(xhr, status, error) {
+            alert("Couldn't send the scrape data to your server...");
         });
+        // chrome.storage.sync.get(['linkedin_profiles'], function (result) {
+            // if (result.linkedin_profiles != undefined) {
+            //     var scrapeData = JSON.parse(result.linkedin_profiles);
+            // }
+        // });
     });
 });
